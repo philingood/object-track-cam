@@ -8,6 +8,7 @@ if __name__ == "__main__":
 
     while True:
         ret, frame = cap.read()
+        # frame = m.resize_frame(frame, scale=0.3)
         # frame = m.redraw_frame(frame)
         m.draw_rect(frame, m.detect_face(m.get_gray_frame(frame), faces))
 

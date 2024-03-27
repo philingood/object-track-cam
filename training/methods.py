@@ -2,6 +2,12 @@ import cv2
 import numpy as np
 
 
+def resize_frame(frame, scale=0.5):
+    w = int(frame.shape[1] * scale)
+    h = int(frame.shape[0] * scale)
+    return cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
+
+
 def redraw_frame(frame):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     frame = cv2.GaussianBlur(frame, (5, 5), 0)
