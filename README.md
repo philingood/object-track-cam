@@ -11,7 +11,7 @@ pip install -r requirements.txt
 или для создания окружения `conda`:
 
 ```bash
-conda env export | grep -v "^prefix: " > environment.yml
+conda create -f environment.yml
 ```
 
 ## Проблемы
