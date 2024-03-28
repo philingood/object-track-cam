@@ -1,53 +1,73 @@
 import cv2
 import time
+import methods as m
 
 
-tracker = cv2.TrackerCSRT_create()
+def get_frame(cap):
+    """Get a frame from the camera and resize it.
+    You can add more methods here if you want.
 
-cap = cv2.VideoCapture(0)
-time.sleep(1)
-ret, frame = cap.read()
-frame = cv2.resize(frame, (1280, 720))
-# object = cv2.selectROI(frame)
-# tracker.init(frame, object)
-
-object_selected = False
-object_roi = None
+    Returns: Tuple of the frame and its gray version.
+    """
+    frame = cap.read()[1]
+    frame = m.resize_frame(frame, scale=0.3)
+    return (frame, m.get_gray_frame(frame))
 
 
-def mouse_click(event, x, y, flags, param):
-    global object_selected, object_roi
-    if event == cv2.EVENT_LBUTTONDOWN:
-        object_roi = (x, y, 1, 1)
-        object_selected = True
+if __name__ == "__main__":
+    # Make a tracker and turn on the camera
+    tracker = cv2.TrackerCSRT_create()
+    cap = cv2.VideoCapture(2)
+    time.sleep(1)
 
+    # Get the first frame and select the object
+    # and initialize the tracker
+    frame, gray = get_frame(cap)
+    object = cv2.selectROI(gray)
+    tracker.init(gray, object)
 
-cv2.namedWindow("FRAME")
-cv2.setMouseCallback("FRAME", mouse_click)
+    print("\nStart tracking!\n")
+    print("Press Esc to exit\n")
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+    # Variables for backuping
+    bf_cout = 0
+    gray_backup = None
+    success_backup = True
 
-    if object_selected:
-        tracker.init(frame, object_roi)
-        object_selected = False
+    # Main loop
+    while True:
+        # Get the frame and update the tracker
+        frame, gray = get_frame(cap)
+        success, box = tracker.update(gray)
 
-    frame = cv2.resize(frame, (1280, 720))
-    success, box = tracker.update(frame)
-    if success:
-        (x, y, w, h) = [int(a) for a in box]
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cx = (x + x + w) // 2
-        cy = (y + y + h) // 2
-        # cv2.circle(frame, (cx, cy), 5, (0, 0, 255), -1)
-        # cv2.line(frame, (cx, 0), (cx, 480), (0, 0, 255), 2)
+        # Get backup frame every 10 frames
+        if success_backup:
+            if bf_cout % 10 == 0:
+                gray_backup = gray
 
-    cv2.imshow("FRAME", frame)
-    if cv2.waitKey(1) & 0xFF == 27:
-        break
+        # If the object is tracked on the frame, draw a rectangle
+        if success:
+            m.draw_rect(frame, box=box)
+        # If the object is not tracked, use backup frame
+        elif gray_backup is not None:
+            # print("Object not tracked, using backup frame")
+            success, box = tracker.update(gray_backup)
+            if success:
+                success_backup = True
+                m.draw_rect(frame, box=box)
+        else:
+            success_backup = False
 
+        # Count the frames
+        bf_cout += 1
 
-cap.release()
-cv2.destroyAllWindows()
+        # Show the frame
+        cv2.imshow("FRAME", frame)
+
+        # Wait for Esc key to stop
+        if cv2.waitKey(1) & 0xFF == 27:
+            break
+
+    # Stop the camera and close all windows
+    cap.release()
+    cv2.destroyAllWindows()
