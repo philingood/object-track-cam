@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     # Variables for backuping
     bf_cout = 0
-    gray_backup = None
-    success_backup = True
+    gray_backup = [None, None, None]
+    success_backup = False
 
     # Main loop
     while True:
@@ -40,21 +40,25 @@ if __name__ == "__main__":
         frame, gray = get_frame(cap)
         success, box = tracker.update(gray)
 
-        # Get backup frame every 10 frames
+        # Get backup frames
         if success_backup:
+            if bf_cout % 5 == 0:
+                gray_backup[0] = gray
             if bf_cout % 10 == 0:
-                gray_backup = gray
+                gray_backup[1] = gray
+            if bf_cout % 30 == 0:
+                gray_backup[2] = gray
 
         # If the object is tracked on the frame, draw a rectangle
         if success:
             m.draw_rect(frame, box=box)
+            success_backup = True
         # If the object is not tracked, use backup frame
-        elif gray_backup is not None:
-            # print("Object not tracked, using backup frame")
-            success, box = tracker.update(gray_backup)
+        elif bf_cout > 0:
+            success, box = tracker.update(gray_backup[1])
             if success:
-                success_backup = True
                 m.draw_rect(frame, box=box)
+                success_backup = True
         else:
             success_backup = False
 
@@ -63,6 +67,12 @@ if __name__ == "__main__":
 
         # Show the frame
         cv2.imshow("FRAME", frame)
+
+        # Wait for s key to reselect the object
+        if cv2.waitKey(1) & 0xFF == ord("s"):
+            object = cv2.selectROI(gray)
+            tracker.init(gray, object)
+            continue
 
         # Wait for Esc key to stop
         if cv2.waitKey(1) & 0xFF == 27:
