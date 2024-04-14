@@ -21,12 +21,14 @@ if __name__ == "__main__":
 
     # Tracker
     tracker = cv2.TrackerCSRT_create()
+    TRACK_COLOR = (0, 0, 255)
     TRACK = False
 
     # Auto trackers
     # Face
     faces = cv2.CascadeClassifier(
         "training/haarcascade_frontalface_default.xml")
+    FACE_COLOR = (255, 0, 0)
     FACE = False
 
     bf_cout = 0
@@ -39,17 +41,19 @@ if __name__ == "__main__":
         if TRACK:
             # Update the tracker
             success, box = tracker.update(gray)
-            m.draw_tracker_name(frame, "CSRT tracker")
+            m.draw_tracker_name(frame, "CSRT tracker", color=TRACK_COLOR)
 
             # If the object is tracked on the frame, draw a rectangle
             if success:
-                m.draw_rect(frame, box=box)
+                m.draw_rect(frame, rect=[box], color=TRACK_COLOR)
 
         if FACE:
             if TRACK:
                 tracker_number = 2
-            m.draw_tracker_name(frame, "FACE tracker", tracker_number)
-            m.draw_rect(frame, rect=m.detect_face(gray, faces))
+            m.draw_tracker_name(frame, "FACE tracker",
+                                tracker_number, color=FACE_COLOR)
+            m.draw_rect(frame, rect=m.detect_face(
+                gray, faces), color=FACE_COLOR)
 
         # Count the frames
         bf_cout += 1
@@ -61,22 +65,18 @@ if __name__ == "__main__":
         # Wait for f key to start face tracking
         if cv2.waitKey(1) & 0xFF == ord("f"):
             FACE = True
-            continue
         # Wait for F key to stop face tracking
         if cv2.waitKey(1) & 0xFF == ord("F"):
             FACE = False
-            continue
 
         # Wait for s key to reselect the object for Tracker
         if cv2.waitKey(1) & 0xFF == ord("s"):
             object = cv2.selectROI(gray)
             tracker.init(gray, object)
             TRACK = True
-            continue
         # Wait for S key to stop CSRT Tracker
         if cv2.waitKey(1) & 0xFF == ord("S"):
             TRACK = False
-            continue
 
         # Wait for Q key to stop all trackers
         if cv2.waitKey(1) & 0xFF == ord("Q"):
@@ -84,7 +84,6 @@ if __name__ == "__main__":
                 TRACK = False
             if FACE:
                 FACE = False
-            continue
 
         # Wait for Esc key to stop
         if cv2.waitKey(1) & 0xFF == 27:
