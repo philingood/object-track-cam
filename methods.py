@@ -1,12 +1,29 @@
 import cv2
+from cv2.typing import Rect
 
 frame = cv2.UMat
-rectangle = cv2.typing.Rect
 
 
 # ~~~~~~~~~~ Detectors ~~~~~~~~~~
-def detect_face(frame: frame, faces) -> rectangle:
-    return faces.detectMultiScale(frame, scaleFactor=2.1, minNeighbors=2)
+def detect_face(frame: frame, faces) -> tuple[bool, Rect]:
+    """
+    Detects faces in the frame.
+    :param frame: frame in which to detect
+    :param faces: cv2.CascadeClassifie
+    :return: tuple(bool, Rect)
+    """
+    face = faces.detectMultiScale(frame, scaleFactor=2.1, minNeighbors=2)
+    success = True
+    if len(face) == 0:
+        success = False
+    return (success, face)
+
+
+def get_box_center(rect: Rect) -> tuple[int, int]:
+    x, y, w, h = rect[0][0], rect[0][1], rect[0][2], rect[0][3]
+    cx = x + w // 2
+    cy = y + h // 2
+    return (cx, cy)
 
 
 # ~~~~~~~~~~ Frame processing ~~~~~~~~~~
@@ -21,8 +38,14 @@ def get_gray_frame(frame: frame) -> frame:
 
 
 # ~~~~~~~~~~ Drawings ~~~~~~~~~~~
+def draw_point(
+    frame: frame, point: tuple[int, int], color: tuple[int, int, int] = (0, 255, 0)
+) -> frame:
+    return cv2.circle(frame, point, 3, color, -1)
+
+
 def draw_rect(
-    frame: frame, rect: rectangle, color: tuple[int, int, int] = (0, 255, 0)
+    frame: frame, rect: Rect, color: tuple[int, int, int] = (0, 255, 0)
 ) -> frame:
     """
     Draw rectangle on the frame.
