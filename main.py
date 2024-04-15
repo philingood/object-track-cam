@@ -104,7 +104,7 @@ if __name__ == "__main__":
         if keys.keyIsPressed("1"):
             if tracker_number == 2 or CSRT:
                 TRACK_CSRT = True
-            else:
+            elif FACE:
                 TRACK_FACE = True
         elif keys.keyIsPressed("2"):
             if FACE:
