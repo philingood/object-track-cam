@@ -1,33 +1,40 @@
-import time
-import numpy as np
-from typing import Tuple, Sequence
-from cv2 import typing
 import logging
+import time
+from typing import Sequence, Tuple
 
-from cv2.legacy import TrackerCSRT
+import config
+import modules.methods as m
+import numpy as np
 from cv2 import (
     CascadeClassifier,
     VideoCapture,
-    selectROI,
-    imshow,
     destroyAllWindows,
+    destroyWindow,
+    imshow,
+    selectROI,
+    typing,
 )
-import modules.methods as m
+from cv2.legacy import TrackerCSRT
 from modules.draw import (
-    draw_text,
     draw_point,
     draw_region,
+    draw_text,
 )
-from modules.frame import resize_frame, get_gray_frame
+from modules.frame import get_gray_frame, resize_frame
 from modules.keys import Keys
 from modules.tracker import Tracker
+
+logging.basicConfig(
+    level=logging.DEBUG if config.DEBUG else logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 
 def get_frame(cap: VideoCapture) -> Tuple:
     """Get a frame from the camera and resize it.
     You can add more methods here if you want.
-
-    Returns: Tuple of the frame and its gray version.
+    :param cap: cv2.VideoCapture
+    :return: Tuple of the frame and its gray version.
     """
     frame = cap.read()[1]
     frame = resize_frame(frame, scale=0.5)
@@ -48,7 +55,6 @@ def show_center(frame: np.ndarray, rect: Sequence[typing.Rect]) -> None:
 
 if __name__ == "__main__":
     key = Keys()
-    logging.basicConfig(level=logging.DEBUG)
 
     # NOTE: Select number of your camera 0 or 1 or 2 …
     cap = VideoCapture(0)
@@ -84,31 +90,9 @@ if __name__ == "__main__":
             face.start_tracking()
         if key.isPressed("s"):
             object = selectROI(gray)
+            destroyWindow("ROI selector")
             csrt.tracker.init(gray, object)
             csrt.start_tracking()
-
-        # # Press s key to start or reselect the object for CSRT tracker
-        # if keys.keyIsPressed("s"):
-        #     object = cv2.selectROI(gray)
-        #     tracker.init(gray, object)
-        #     CSRT = True
-
-        # if FACE:
-        #     success, face = m.detect_face(gray, faces)
-        #     if CSRT:
-        #         tracker_number = 2
-        #     if TRACK_FACE and success:
-        #         show_center(frame, face)
-        #     draw_tracker_name(
-        #         frame,
-        #         f"{tracker_number} FACE tracker",
-        #         tracker_number,
-        #         color=FACE_COLOR,
-        #     )
-        #     draw_rect(frame, rect=face, color=FACE_COLOR)
-        #     if keys.keyIsPressed("F"):
-        #         FACE = False
-        #         TRACK_FACE = False
 
         # Count the frames
         # bf_cout += 1
@@ -119,18 +103,8 @@ if __name__ == "__main__":
             csrt.stop_tracking()
             face.stop_tracking()
 
-        # # Press 1 or 2 to focus camera on the object
-        # if keys.keyIsPressed("1"):
-        #     if tracker_number == 2 or CSRT:
-        #         TRACK_CSRT = True
-        #     elif FACE:
-        #         TRACK_FACE = True
-        # elif keys.keyIsPressed("2"):
-        #     if FACE:
-        #         TRACK_FACE = True
-
         # Press Esc key to stop
-        if key.escKeyIsPressed():
+        if key.escIsPressed():
             break
 
     # Stop the camera and close all windows

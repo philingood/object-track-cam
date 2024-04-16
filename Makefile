@@ -8,3 +8,6 @@ help: ## This help message
 run: ## Run application
 	python main.py
 
+.PHONY: debug
+debug: ## Run application in debug mode
+	python main.py DEBUG
