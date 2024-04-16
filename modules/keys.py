@@ -17,5 +17,5 @@ class Keys:
         else:
             return False
 
-    def keyIsPressed(self, key: str) -> bool:
+    def isPressed(self, key: str) -> bool:
         return self.waitKeyIf(key)
