@@ -47,11 +47,20 @@ def draw_region(
 def draw_text(
     frame: np.ndarray,
     text: str,
+    scale: float = 1,
     color: Tuple[int, int, int] = (0, 255, 0),
+    thickness: int = 2,
     position: Tuple[int, int] = (10, 30),
 ) -> np.ndarray:
     return cv2.putText(
-        frame, text, position, cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA
+        frame,
+        text,
+        position,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        scale,
+        color,
+        thickness,
+        cv2.LINE_AA,
     )
 
 

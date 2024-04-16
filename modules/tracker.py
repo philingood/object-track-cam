@@ -53,8 +53,7 @@ class Tracker:
                 color=self.color,
             )
             success, obj = self.func(*args)
-            logging.debug(success, obj)
-            # print(success, obj)
+            logging.debug(f"{success}, {obj}")
             if success:
                 try:
                     draw_rect(frame, obj, self.color)
