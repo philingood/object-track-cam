@@ -1,8 +1,7 @@
 import logging
 import time
-from typing import Sequence, Tuple
+from typing import Tuple
 
-import numpy as np
 from cv2 import (
     CascadeClassifier,
     VideoCapture,
@@ -10,27 +9,16 @@ from cv2 import (
     destroyWindow,
     imshow,
     selectROI,
-    typing,
 )
 from cv2.legacy import TrackerCSRT
 
 import config
-import modules.methods as m
-from modules.draw import (
-    draw_point,
-    draw_region,
-    draw_text,
-)
 from modules.frame import (
-    define_region,
-    divide_frame_into_regions,
-    get_frame_size,
     get_gray_frame,
     resize_frame,
 )
 from modules.keys import Keys
-from modules.servomotor import Servomotor
-from modules.tracker import Tracker
+from modules.tracker import Tracker, detect_face
 
 logging.basicConfig(
     level=logging.DEBUG if config.DEBUG else logging.INFO,
@@ -45,27 +33,15 @@ def get_frame(cap: VideoCapture) -> Tuple:
     :return: Tuple of the frame and its gray version.
     """
     frame = cap.read()[1]
-    frame = resize_frame(frame, scale=0.5)
+    frame = resize_frame(frame, scale=0.8)
     return (frame, get_gray_frame(frame))
-
-
-# def show_center(frame: np.ndarray, rect: Sequence[typing.Rect]) -> None:
-#     """Show the center of the rectangle."""
-#     center = m.get_box_center(rect)
-#     print(f"Center coordinates: {center}")
-#     draw_point(frame, center)
-#     regions = divide_frame_into_regions(frame)
-#     region_with_center = define_region(center, regions)
-#     velocity = Servomotor.calculate_velocity(region_with_center)
-#     draw_text(frame, f"{velocity}", position=center)
-#     draw_region(frame, region_with_center, regions)
 
 
 if __name__ == "__main__":
     key = Keys()
 
     # NOTE: Select number of your camera 0 or 1 or 2 …
-    cap = VideoCapture(0)
+    cap = VideoCapture(1)
     time.sleep(1)
 
     # Trackers
@@ -79,12 +55,10 @@ if __name__ == "__main__":
     face = Tracker(
         CascadeClassifier("data/haarcascade_frontalface_default.xml"),
         "Face tracker",
-        m.detect_face,
+        detect_face,
         tracker_number=2,
         color=(255, 0, 0),
     )
-
-    bf_cout = 0
 
     # Main loop
     while True:
@@ -94,6 +68,7 @@ if __name__ == "__main__":
 
         imshow("Tracker", frame)
 
+        # Control
         if key.isPressed("f"):
             face.start_tracking()
         if key.isPressed("s"):
@@ -102,9 +77,10 @@ if __name__ == "__main__":
             csrt.tracker.init(gray, object)
             csrt.start_tracking()
 
-        # Count the frames
-        # bf_cout += 1
-        # print("Frame: ", bf_cout)
+        # Press t key to start centering
+        if key.isPressed("t"):
+            # TODO: Add more tracker types
+            face.start_centering()
 
         # Press Q key to stop all trackers
         if key.isPressed("Q"):

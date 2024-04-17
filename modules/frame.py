@@ -2,7 +2,8 @@
 Frame processing module
 """
 
-from typing import Dict, Tuple
+from typing import Dict, Sequence, Tuple
+from cv2.typing import Rect
 
 from cv2 import resize, cvtColor, COLOR_BGR2GRAY, INTER_AREA
 import numpy as np
@@ -25,9 +26,9 @@ def get_gray_frame(frame: np.ndarray) -> np.ndarray:
 def divide_frame_into_regions(frame: np.ndarray, n: int = 6) -> Dict:
     """
     Frame is divided into nxn parts (regions) with (i, j) indexing:
-    (n, 1) … (n, n)
+    (1, 1) … (n, 1)
     …   …   …   …
-    (1, 1) … (1, n)
+    (n, 1) … (n, n)
 
     :param frame: frame which to divide
     :param n: number of regions by width
@@ -52,7 +53,6 @@ def define_region(
     center: Tuple[int, int],
     regions: Dict,
 ) -> Tuple[int, int, int]:
-    # FIXME: This function does not work properly
     """
     Defines region in which the object is located.
     :param frame: frame in which to calculate
@@ -62,6 +62,18 @@ def define_region(
     n = regions["n"]
     x, y = center
     region_width, region_height = regions[("w", "h")]
-    i = int(x // region_width)
-    j = int(y // region_height)
+    i = int((x + region_width) / region_width)
+    j = int((y + region_height) / region_height)
     return (i, j, n)
+
+
+def central_region(frame: np.ndarray) -> Sequence[Rect]:
+    """
+    Returns central region in which the abstract speed of motor will be zero.
+    """
+    cx, cy = (frame.shape[1] // 2, frame.shape[0] // 2)
+    x = cx - (frame.shape[1] // 20)
+    y = cy - (frame.shape[0] // 20)
+    w = frame.shape[1] // 10
+    h = frame.shape[0] // 10
+    return [[x, y, w, h]]

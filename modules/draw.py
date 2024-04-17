@@ -1,5 +1,5 @@
 """
-Draw thigns on frame module
+This module contains functions to draw things on frame
 """
 
 import cv2
@@ -40,7 +40,6 @@ def draw_region(
     """
     i, j, n = position
     region = regions[(i, j)]
-    print(region)
     return draw_rect(frame, [region])
 
 
