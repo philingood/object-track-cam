@@ -1,5 +1,6 @@
 """
-This module contains the Servomotor class, which is used to drive a servomotor with camera.
+This module contains the Servomotor class, which is used to drive a servomotor
+with camera.
 """
 
 from typing import Tuple
@@ -9,10 +10,12 @@ class Servomotor:
     def __init__(self):
         pass
 
-    def calculate_velocity(self, position: Tuple[int, int, int]) -> Tuple[int, int]:
+    @staticmethod
+    def calculate_velocity(position: Tuple[int, int, int]) -> Tuple[int, int]:
         """
         Calculates abstract velocity for servo motor.
-        In essence, the center of coordinates is transferred to center of frame.
+        In essence, the coordinate center is transferred to the center of
+        the frame and the region index is recalculated.
         :param position: tuple(i, j, n), where i, j - index of the region,
         n - quontity of regions by width.
         :return: tuple(x, y)

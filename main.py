@@ -2,8 +2,6 @@ import logging
 import time
 from typing import Sequence, Tuple
 
-import config
-import modules.methods as m
 import numpy as np
 from cv2 import (
     CascadeClassifier,
@@ -15,18 +13,28 @@ from cv2 import (
     typing,
 )
 from cv2.legacy import TrackerCSRT
+
+import config
+import modules.methods as m
 from modules.draw import (
     draw_point,
     draw_region,
     draw_text,
 )
-from modules.frame import get_gray_frame, resize_frame
+from modules.frame import (
+    define_region,
+    divide_frame_into_regions,
+    get_frame_size,
+    get_gray_frame,
+    resize_frame,
+)
 from modules.keys import Keys
+from modules.servomotor import Servomotor
 from modules.tracker import Tracker
 
 logging.basicConfig(
     level=logging.DEBUG if config.DEBUG else logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s",
 )
 
 
@@ -41,16 +49,16 @@ def get_frame(cap: VideoCapture) -> Tuple:
     return (frame, get_gray_frame(frame))
 
 
-def show_center(frame: np.ndarray, rect: Sequence[typing.Rect]) -> None:
-    """Show the center of the rectangle."""
-    center = m.get_box_center(rect)
-    print(f"Center coordinates: {center}")
-    draw_point(frame, center)
-    regions = m.divide_frame_into_regions(frame)
-    region_with_center = m.define_region(center, regions)
-    velocity = m.calculate_velocity(region_with_center)
-    draw_text(frame, f"{velocity}", position=center)
-    draw_region(frame, region_with_center, regions)
+# def show_center(frame: np.ndarray, rect: Sequence[typing.Rect]) -> None:
+#     """Show the center of the rectangle."""
+#     center = m.get_box_center(rect)
+#     print(f"Center coordinates: {center}")
+#     draw_point(frame, center)
+#     regions = divide_frame_into_regions(frame)
+#     region_with_center = define_region(center, regions)
+#     velocity = Servomotor.calculate_velocity(region_with_center)
+#     draw_text(frame, f"{velocity}", position=center)
+#     draw_region(frame, region_with_center, regions)
 
 
 if __name__ == "__main__":
@@ -103,7 +111,7 @@ if __name__ == "__main__":
             csrt.stop_tracking()
             face.stop_tracking()
 
-        # Press Esc key to stop
+        # Press Esc key to stop program
         if key.escIsPressed():
             break
 

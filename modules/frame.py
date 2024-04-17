@@ -60,7 +60,6 @@ def define_region(
     :return: tuple(i, j, n)
     """
     n = regions["n"]
-    w, h = regions["frame_size"]
     x, y = center
     region_width, region_height = regions[("w", "h")]
     i = int(x // region_width)

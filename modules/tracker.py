@@ -2,18 +2,21 @@
 Module containing the Tracker class
 """
 
-import numpy as np
-from typing import Tuple
-from cv2 import error as cv2error
 import logging
+from typing import Tuple
 
-from cv2.legacy import TrackerCSRT
+import numpy as np
 from cv2 import (
     CascadeClassifier,
     VideoCapture,
-    imshow,
     destroyAllWindows,
+    imshow,
 )
+from cv2 import error as cv2error
+from cv2.legacy import TrackerCSRT
+
+logging.getLogger("__name__")
+
 
 try:
     from draw import draw_rect, draw_tracker_name
@@ -53,15 +56,16 @@ class Tracker:
                 color=self.color,
             )
             success, obj = self.func(*args)
-            logging.debug(f"{success}, {obj}")
             if success:
                 try:
                     draw_rect(frame, obj, self.color)
                 except (TypeError, ValueError, cv2error) as e:
-                    print(obj)
-                    print("You are looser!", e)
+                    logging.error(e)
                 if self.centering:
                     pass
+            else:
+                logging.debug(f"{success}, {obj}")
+
         if key.isPressed(STOP_KEY):
             self.stop_tracking()
 
