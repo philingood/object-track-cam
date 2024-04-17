@@ -77,10 +77,12 @@ if __name__ == "__main__":
             csrt.tracker.init(gray, object)
             csrt.start_tracking()
 
-        # Press t key to start centering
-        if key.isPressed("t"):
+        # Press c/C key to start/stop centering
+        if key.isPressed("c"):
             # TODO: Add more tracker types
             face.start_centering()
+        if key.isPressed("C"):
+            face.stop_centering()
 
         # Press Q key to stop all trackers
         if key.isPressed("Q"):
