@@ -1,4 +1,4 @@
-import cv2
+from cv2 import waitKey
 
 
 class Keys:
@@ -6,7 +6,7 @@ class Keys:
         pass
 
     def waitKeyIf(self, key: str) -> bool:
-        return cv2.waitKey(1) & 0xFF == ord(key)
+        return waitKey(5) & 0xFF == ord(key)
 
     def escIsPressed(self):
         ESC = "\x1b"
