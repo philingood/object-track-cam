@@ -11,3 +11,11 @@ run: ## Run application
 .PHONY: debug
 debug: ## Run application in debug mode
 	python main.py DEBUG
+
+.PHONY: conda run
+run: ## Run application
+	source $$(conda info --base)/etc/profile.d/conda.sh && conda activate highflyer && python main.py
+
+.PHONY: conda debug
+debug: ## Run application in debug mode
+	source $$(conda info --base)/etc/profile.d/conda.sh && conda activate highflyer && python main.py DEBUG
