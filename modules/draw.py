@@ -5,7 +5,7 @@ This module contains functions to draw things on frame
 import logging
 from cv2 import circle, rectangle, putText, FONT_HERSHEY_SIMPLEX, LINE_AA
 import numpy as np
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict, Union
 
 
 def draw_point(
@@ -16,7 +16,7 @@ def draw_point(
 
 def draw_rect(
     frame: np.ndarray,
-    rect: Union[List, Tuple],
+    rect: Union[np.ndarray, Tuple],
     color: Tuple[int, int, int] = (0, 255, 0),
 ) -> np.ndarray:
     """
@@ -27,13 +27,14 @@ def draw_rect(
     :return: frame with rectangle
     """
     rect_frame = frame
-    if isinstance(rect, List):
+    if isinstance(rect, np.ndarray):
         logging.debug("List")
         for x, y, w, h in rect:
             rect_frame = rectangle(frame, (x, y), (x + w, y + h), color, 3)
     elif isinstance(rect, Tuple):
         logging.debug("Tuple")
-        x, y, w, h = rect
+        x, y, w, h = tuple(map(int, rect))
+        logging.debug(f"x: {x}, y: {y}, w: {w}, h: {h}")
         rect_frame = rectangle(frame, (x, y), (x + w, y + h), color, 3)
     return rect_frame
 
@@ -48,7 +49,7 @@ def draw_region(
     """
     i, j, _ = position
     region = regions[(i, j)]
-    return draw_rect(frame, [region])
+    return draw_rect(frame, np.array([region]))
 
 
 def draw_text(

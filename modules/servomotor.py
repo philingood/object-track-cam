@@ -38,4 +38,7 @@ class Servomotor:
         """
         Sends data to arduino.
         """
-        usb.write(data_string(self.name, angle))
+        if usb is not None:
+            usb.write(data_string(self.name, angle))
+        else:
+            pass

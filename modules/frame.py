@@ -2,8 +2,7 @@
 Frame processing module
 """
 
-from typing import Dict, Sequence, Tuple
-from cv2.typing import Rect
+from typing import Dict, Tuple
 from cv2 import VideoCapture
 
 from cv2 import resize, cvtColor, COLOR_BGR2GRAY, INTER_AREA
@@ -79,7 +78,7 @@ def define_region(
     return (i, j, n)
 
 
-def central_region(frame: np.ndarray) -> Sequence[Rect]:
+def central_region(frame: np.ndarray) -> np.ndarray:
     """
     Returns central region in which the abstract coordinates of center
     of the object will be zero.
@@ -89,7 +88,7 @@ def central_region(frame: np.ndarray) -> Sequence[Rect]:
     y = cy - (frame.shape[0] // 12)
     w = frame.shape[1] // 6
     h = frame.shape[0] // 6
-    return [[x, y, w, h]]
+    return np.array([[x, y, w, h]])
 
 
 if __name__ == "__main__":

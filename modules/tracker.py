@@ -8,8 +8,6 @@ try:
         central_region,
         define_region,
         divide_frame_into_regions,
-        get_gray_frame,
-        resize_frame,
     )
     from keys import Keys
     from servomotor import Servomotor
@@ -19,8 +17,6 @@ except ImportError:
         central_region,
         define_region,
         divide_frame_into_regions,
-        get_gray_frame,
-        resize_frame,
     )
     from .keys import Keys
     from .servomotor import Servomotor
@@ -28,11 +24,11 @@ import logging
 from typing import Sequence, Tuple
 
 import numpy as np
+from config import INITIAL_X, INITIAL_Y
 from cv2 import CascadeClassifier, selectROI
 from cv2.legacy import TrackerCSRT
 from cv2.typing import Rect
 
-from config import INITIAL_X, INITIAL_Y
 
 logging.getLogger("__name__")
 
@@ -62,9 +58,13 @@ class Tracker:
         self.func = main_function
         self.angleX = INITIAL_X
         self.angleY = INITIAL_Y
+        self.total_frames_count = 0
+        self.success_frames_count = 0
+        self.success_tracked_count = 0
 
     def process(self, frame: np.ndarray, STOP_KEY: str, *args) -> None:
         if self.track:
+            self.total_frames_count += 1
             draw_tracker_name(
                 frame,
                 f"{self.tracker_number} {self.name}",
@@ -73,8 +73,12 @@ class Tracker:
             )
             success, rect = self.func(*args)
             if success:
+                self.success_frames_count += 1
                 try:
                     frame = draw_rect(frame, rect, self.color)
+                    logging.debug(
+                        f"success: {success}, rect: {rect}, type: {type(rect)}"
+                    )
                 except Exception as e:
                     logging.debug(e)
                     logging.debug(
@@ -90,7 +94,7 @@ class Tracker:
     def calculate_coordinates(
         self,
         position: Tuple[int, int, int],
-        central_region: Sequence[Rect],
+        central_region: np.ndarray,
         center_of_frame: Tuple[int, int],
     ) -> Tuple[int, int]:
         """
@@ -142,9 +146,7 @@ class Tracker:
         cy: int = y + h // 2
         return (cx, cy)
 
-    def folow_center(
-        self, frame: np.ndarray, success: bool, rect: Sequence[Rect]
-    ) -> None:
+    def folow_center(self, frame: np.ndarray, success: bool, rect) -> None:
         # Define central region in which coordinates is zero
         central_region_rect = central_region(frame)
         WHITE = (255, 255, 255)
@@ -165,6 +167,9 @@ class Tracker:
             coordinates = self.calculate_coordinates(
                 region_with_center, central_region(frame), center
             )
+            if coordinates == (0, 0):
+                self.success_tracked_count += 1
+
             draw_text(frame, f"{coordinates}", position=center)
             logging.debug(coordinates)
             self.angleX = servoX.calculate_angle(coordinates[0], self.angleX)
@@ -174,6 +179,22 @@ class Tracker:
             # Send angles to servomotors
             servoX.send_data(self.angleX)
             servoY.send_data(self.angleY)
+
+    def get_efficiency(self):
+        print("\n")
+        print(f"Tracker {self.name}:")
+        s = self.success_frames_count
+        st = self.success_tracked_count
+        t = self.total_frames_count
+        print(f"Total number of frames: {t}")
+        print(f"Number of successful frames: {s}")
+        print(f"Number of frames when object was in the center: {st}")
+
+        if t > 0:
+            print(f"Efficiency: {s / t * 100:.2f}%")
+            print(f"Total efficiency: {st / t * 100:.2f}%")
+        else:
+            print("Efficiency is not available. No frames were processed")
 
     def start_tracking(self):
         self.track = True
@@ -221,6 +242,7 @@ csrt = CSRTracker(
     tracker_number=1,
     color=(0, 0, 255),
 )
+
 face = Tracker(
     CascadeClassifier("data/haarcascade_frontalface_default.xml"),
     "Face tracker",
@@ -237,16 +259,9 @@ if __name__ == "__main__":
         imshow,
     )
 
-    logging.basicConfig(level=logging.DEBUG)
+    from frame import get_frame
 
-    def get_frame(cap: VideoCapture) -> Tuple:
-        """Get a frame from the camera and resize it.
-        You can add more methods here if you want.
-        Returns: Tuple of the frame and its gray version.
-        """
-        frame = cap.read()[1]
-        frame = resize_frame(frame, scale=0.5)
-        return (frame, get_gray_frame(frame))
+    logging.basicConfig(level=logging.DEBUG)
 
     cap = VideoCapture(0)
 
