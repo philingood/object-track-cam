@@ -11,7 +11,7 @@ help: ## This help message
 	@echo "  conda debug - Запуск приложения в режиме отладки в окружении conda"
 	@echo ""
 	@echo "Flags:"
-	@echo "  --no-arduino - Запуск без Arduino"
+	@echo "  no-arduino - Запуск без Arduino"
 	@echo ""
 
 
@@ -20,7 +20,7 @@ ENV := source $$(conda info --base)/etc/profile.d/conda.sh && conda activate hig
 .PHONY: run debug
 run debug: ## Запуск приложения / Запуск приложения в режиме отладки
 ifeq ($(filter conda,$@),conda)
-	@$(ENV) && python main.py $(if $(filter debug,$@),--debug,) $(if $(filter --no-arduino,$(MAKECMDGOALS)),--no-arduino,)
+	@$(ENV) && python main.py $(if $(filter debug,$@),--debug,) $(if $(filter no-arduino,$(MAKECMDGOALS)),--no-arduino,)
 else
-	@python main.py $(if $(filter debug,$@),--debug,) $(if $(filter --no-arduino,$(MAKECMDGOALS)),--no-arduino,)
+	@python main.py $(if $(filter debug,$@),--debug,) $(if $(filter no-arduino,$(MAKECMDGOALS)),--no-arduino,)
 endif
