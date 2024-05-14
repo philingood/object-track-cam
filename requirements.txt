@@ -1,5 +1,14 @@
 opencv-python
 opencv-contrib-python
-cvzone
-mediapipe
-serial
+pyserial
+
+## Unnecessary
+# cvzone
+# mediapipe
+
+## For yolo
+# ultralytics
+# deep-sort-realtime
+# torch 
+# torchvision 
+# torchaudio

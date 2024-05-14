@@ -2,8 +2,8 @@
 Frame processing module
 """
 
-from typing import Dict, Sequence, Tuple
-from cv2.typing import Rect
+from typing import Dict, Tuple
+from cv2 import VideoCapture
 
 from cv2 import resize, cvtColor, COLOR_BGR2GRAY, INTER_AREA
 import numpy as np
@@ -21,6 +21,17 @@ def resize_frame(frame: np.ndarray, scale: float = 0.5) -> np.ndarray:
 
 def get_gray_frame(frame: np.ndarray) -> np.ndarray:
     return cvtColor(frame, COLOR_BGR2GRAY)
+
+
+def get_frame(cap: VideoCapture) -> Tuple:
+    """Get a frame from the camera and resize it.
+    You can add more methods here if you want.
+    :param cap: cv2.VideoCapture
+    :return: Tuple of the frame and its gray version.
+    """
+    frame = cap.read()[1]
+    frame = resize_frame(frame, scale=0.8)
+    return (frame, get_gray_frame(frame))
 
 
 def divide_frame_into_regions(frame: np.ndarray, n: int = 6) -> Dict:
@@ -67,13 +78,32 @@ def define_region(
     return (i, j, n)
 
 
-def central_region(frame: np.ndarray) -> Sequence[Rect]:
+def central_region(frame: np.ndarray) -> np.ndarray:
     """
-    Returns central region in which the abstract speed of motor will be zero.
+    Returns central region in which the abstract coordinates of center
+    of the object will be zero.
     """
     cx, cy = (frame.shape[1] // 2, frame.shape[0] // 2)
-    x = cx - (frame.shape[1] // 20)
-    y = cy - (frame.shape[0] // 20)
-    w = frame.shape[1] // 10
-    h = frame.shape[0] // 10
-    return [[x, y, w, h]]
+    x = cx - (frame.shape[1] // 12)
+    y = cy - (frame.shape[0] // 12)
+    w = frame.shape[1] // 6
+    h = frame.shape[0] // 6
+    return np.array([[x, y, w, h]])
+
+
+if __name__ == "__main__":
+    import cv2
+    import keys
+    from draw import draw_rect
+
+    key = keys.Keys()
+    cam = cv2.VideoCapture(0)
+
+    while True:
+        _, frame = cam.read()
+        frame = draw_rect(frame, central_region(frame))
+
+        cv2.imshow("FRAME", frame)
+
+        if key.escIsPressed():
+            break

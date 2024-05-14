@@ -2,31 +2,40 @@
 This module contains functions to draw things on frame
 """
 
-import cv2
+import logging
+from cv2 import circle, rectangle, putText, FONT_HERSHEY_SIMPLEX, LINE_AA
 import numpy as np
-from typing import Tuple, Sequence, Dict
-from cv2.typing import Rect
+from typing import Tuple, Dict, Union
 
 
 def draw_point(
     frame: np.ndarray, point: Tuple[int, int], color: Tuple[int, int, int] = (0, 255, 0)
 ) -> np.ndarray:
-    return cv2.circle(frame, point, 3, color, -1)
+    return circle(frame, point, 3, color, -1)
 
 
 def draw_rect(
-    frame: np.ndarray, rect: Sequence[Rect], color: Tuple[int, int, int] = (0, 255, 0)
+    frame: np.ndarray,
+    rect: Union[np.ndarray, Tuple],
+    color: Tuple[int, int, int] = (0, 255, 0),
 ) -> np.ndarray:
     """
     Draw rectangle on the frame.
     :param frame: frame in which to draw
-    :param rect: list of [x, y, w, h]
+    :param rect: list of [x, y, w, h] or tuple of (x, y, w, h)
     :param color: color of rectangle
     :return: frame with rectangle
     """
     rect_frame = frame
-    for x, y, w, h in rect:
-        rect_frame = cv2.rectangle(frame, (x, y), (x + w, y + h), color, 3)
+    if isinstance(rect, np.ndarray):
+        logging.debug("List")
+        for x, y, w, h in rect:
+            rect_frame = rectangle(frame, (x, y), (x + w, y + h), color, 3)
+    elif isinstance(rect, Tuple):
+        logging.debug("Tuple")
+        x, y, w, h = tuple(map(int, rect))
+        logging.debug(f"x: {x}, y: {y}, w: {w}, h: {h}")
+        rect_frame = rectangle(frame, (x, y), (x + w, y + h), color, 3)
     return rect_frame
 
 
@@ -38,9 +47,9 @@ def draw_region(
     """
     Draw region in which the object is located on the frame.
     """
-    i, j, n = position
+    i, j, _ = position
     region = regions[(i, j)]
-    return draw_rect(frame, [region])
+    return draw_rect(frame, np.array([region]))
 
 
 def draw_text(
@@ -51,15 +60,15 @@ def draw_text(
     thickness: int = 2,
     position: Tuple[int, int] = (10, 30),
 ) -> np.ndarray:
-    return cv2.putText(
+    return putText(
         frame,
         text,
         position,
-        cv2.FONT_HERSHEY_SIMPLEX,
+        FONT_HERSHEY_SIMPLEX,
         scale,
         color,
         thickness,
-        cv2.LINE_AA,
+        LINE_AA,
     )
 
 
@@ -78,6 +87,4 @@ def draw_tracker_name(
     :return: frame with tracker name
     """
     scale = frame.shape[0] / 500
-    return cv2.putText(
-        frame, tracker_name, (10, 20 * tracker_number), 3, scale, color, 2
-    )
+    return putText(frame, tracker_name, (10, 20 * tracker_number), 3, scale, color, 2)
