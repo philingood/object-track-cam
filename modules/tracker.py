@@ -143,13 +143,13 @@ class Tracker:
         """
         if isinstance(rect, np.ndarray):
             x, y, w, h = rect[0][0], rect[0][1], rect[0][2], rect[0][3]
-            cx: int = x + w // 2
-            cy: int = y + h // 2
+            cx: int = int(x + w // 2)
+            cy: int = int(y + h // 2)
             return (cx, cy)
         elif isinstance(rect, Tuple):
             x, y, w, h = rect
-            cx: int = x + w // 2
-            cy: int = y + h // 2
+            cx: int = int(x + w // 2)
+            cy: int = int(y + h // 2)
             return (cx, cy)
         else:
             logging.debug("get_box_center: unknown type of rect")
