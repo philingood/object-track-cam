@@ -136,15 +136,24 @@ class Tracker:
             vy = -j + half
         return (vx, vy)
 
-    def get_box_center(self, rect: Sequence[Rect]) -> Tuple[int, int]:
+    def get_box_center(self, rect) -> Tuple[int, int]:
         """
         Gets the center of the rectangle.
         :return: Tuple of (x, y)
         """
-        x, y, w, h = rect[0][0], rect[0][1], rect[0][2], rect[0][3]
-        cx: int = x + w // 2
-        cy: int = y + h // 2
-        return (cx, cy)
+        if isinstance(rect, np.ndarray):
+            x, y, w, h = rect[0][0], rect[0][1], rect[0][2], rect[0][3]
+            cx: int = int(x + w // 2)
+            cy: int = int(y + h // 2)
+            return (cx, cy)
+        elif isinstance(rect, Tuple):
+            x, y, w, h = rect
+            cx: int = int(x + w // 2)
+            cy: int = int(y + h // 2)
+            return (cx, cy)
+        else:
+            logging.debug("get_box_center: unknown type of rect")
+            return (0, 0)
 
     def folow_center(self, frame: np.ndarray, success: bool, rect) -> None:
         # Define central region in which coordinates is zero
